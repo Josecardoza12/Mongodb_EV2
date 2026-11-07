@@ -1,0 +1,38 @@
+2026-11-07 13:48:42,600 | INFO    | contentflow.db | Conectado a MongoDB (base=contentflow)
+2026-11-07 13:49:31,953 | INFO    | contentflow.api | rid=1353ea5cb59b GET /docs -> 200 (1.3 ms) ip=127.0.0.1
+2026-11-07 13:49:32,421 | INFO    | contentflow.api | rid=8fee3d3f798c GET /openapi.json -> 200 (102.3 ms) ip=127.0.0.1
+2026-11-07 13:55:16,302 | INFO    | contentflow.api | rid=db1316fcc135 GET /health -> 200 (127.8 ms) ip=127.0.0.1
+2026-11-07 13:55:19,133 | INFO    | contentflow.api | rid=b14759c36102 GET /health -> 200 (58.0 ms) ip=127.0.0.1
+2026-11-07 14:00:41,158 | INFO    | contentflow.api | rid=0520cab95a80 GET /usuarios -> 200 (1598.7 ms) ip=127.0.0.1
+2026-11-07 14:01:44,044 | INFO    | contentflow.api | rid=00f4e2c965b6 GET /health -> 200 (79.2 ms) ip=127.0.0.1
+2026-11-07 14:02:14,545 | INFO    | contentflow.api | rid=64c082c2e261 GET /usuarios -> 200 (346.0 ms) ip=127.0.0.1
+2026-11-07 14:03:08,787 | INFO    | contentflow.api | Usuario creado user_501
+2026-11-07 14:03:08,791 | INFO    | contentflow.api | rid=9e6a2a5853d3 POST /usuarios -> 201 (577.0 ms) ip=127.0.0.1
+2026-11-07 14:03:21,922 | WARNING | contentflow.api | rid=70afa8c2dabf 409 duplicado ['correo']
+2026-11-07 14:03:21,926 | WARNING | contentflow.api | rid=70afa8c2dabf POST /usuarios -> 409 (221.5 ms) ip=127.0.0.1
+2026-11-07 14:03:39,153 | WARNING | contentflow.api | rid=7811585036d0 422 entrada inválida: [{'campo': 'nombre', 'problema': 'String should have at least 2 characters'}, {'campo': 'correo', 'problema': 'value is not a valid email address: An email address must have an @-sign.'}, {'campo': 'genero', 'problema': "Input should be 'Femenino', 'Masculino' or 'Otro'"}, {'campo': 'dispositivo', 'problema': "Input should be 'Móvil', 'Desktop' or 'Tablet'"}]
+2026-11-07 14:03:39,163 | WARNING | contentflow.api | rid=7811585036d0 POST /usuarios -> 422 (59.6 ms) ip=127.0.0.1
+2026-11-07 14:03:59,224 | INFO    | contentflow.api | rid=18146d2efb18 GET /usuarios/user_501 -> 200 (90.8 ms) ip=127.0.0.1
+2026-11-07 14:04:16,742 | INFO    | contentflow.api | Usuario user_501 actualizado: ['dispositivo']
+2026-11-07 14:04:16,802 | INFO    | contentflow.api | rid=eaecb06d8317 PATCH /usuarios/user_501 -> 200 (133.4 ms) ip=127.0.0.1
+2026-11-07 14:04:48,019 | WARNING | contentflow.api | rid=b8bce6777773 404 -> Usuario 'user_999999' no existe
+2026-11-07 14:04:48,022 | WARNING | contentflow.api | rid=b8bce6777773 GET /usuarios/user_999999 -> 404 (63.7 ms) ip=127.0.0.1
+2026-11-07 14:05:06,407 | INFO    | contentflow.api | Publicación creada pub_501 por user_501
+2026-11-07 14:05:06,409 | INFO    | contentflow.api | rid=299dda457ea4 POST /publicaciones -> 201 (456.9 ms) ip=127.0.0.1
+2026-11-07 14:05:20,289 | WARNING | contentflow.api | rid=98392e203f3a 404 -> El usuario autor 'user_999999' no existe
+2026-11-07 14:05:20,293 | WARNING | contentflow.api | rid=98392e203f3a POST /publicaciones -> 404 (63.0 ms) ip=127.0.0.1
+2026-11-07 14:05:30,459 | INFO    | contentflow.api | rid=674a86406e86 GET /publicaciones -> 200 (140.0 ms) ip=127.0.0.1
+2026-11-07 14:06:10,783 | WARNING | contentflow.api | rid=7444c4dfbe11 400 -> 'desde' no puede ser mayor que 'hasta'
+2026-11-07 14:06:10,785 | WARNING | contentflow.api | rid=7444c4dfbe11 GET /publicaciones -> 400 (3.4 ms) ip=127.0.0.1
+2026-11-07 14:06:35,841 | INFO    | contentflow.api | Reacción react_501: user_1 -> pub_501 (Me encanta)
+2026-11-07 14:06:35,843 | INFO    | contentflow.api | rid=f111bc441864 POST /reacciones -> 201 (513.0 ms) ip=127.0.0.1
+2026-11-07 14:06:49,130 | WARNING | contentflow.api | rid=821755d2f8d7 409 duplicado ['usuario_id', 'publicacion_id']
+2026-11-07 14:06:49,133 | WARNING | contentflow.api | rid=821755d2f8d7 POST /reacciones -> 409 (303.9 ms) ip=127.0.0.1
+2026-11-07 14:07:03,828 | INFO    | contentflow.api | Comentario comm_501 en pub_501 por user_2
+2026-11-07 14:07:03,829 | INFO    | contentflow.api | rid=8929461cab19 POST /comentarios -> 201 (503.7 ms) ip=127.0.0.1
+2026-11-07 14:07:14,673 | INFO    | contentflow.api | rid=697a3e9a6d5a PATCH /comentarios/comm_501/likes -> 200 (184.6 ms) ip=127.0.0.1
+2026-11-07 14:07:32,018 | INFO    | contentflow.api | rid=1cd625a20501 GET /comentarios -> 200 (135.8 ms) ip=127.0.0.1
+2026-11-07 14:07:53,031 | INFO    | contentflow.api | rid=48bf6a005cfb GET /reportes/usuarios-activos -> 200 (80.2 ms) ip=127.0.0.1
+2026-11-07 14:08:10,271 | INFO    | contentflow.api | rid=9733c95cd138 GET /reportes/publicaciones-populares -> 200 (99.2 ms) ip=127.0.0.1
+2026-11-07 14:08:32,720 | INFO    | contentflow.api | Reacción react_501 eliminada
+2026-11-07 14:08:32,744 | INFO    | contentflow.api | rid=6abb77a47215 DELETE /reacciones/react_501 -> 200 (102.4 ms) ip=127.0.0.1

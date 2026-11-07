@@ -1,0 +1,93 @@
+{
+  "fecha": "2026-11-07T13:42:51",
+  "consultas": [
+    {
+      "id": "Q1",
+      "descripcion": "Usuarios móviles registrados en 2025, orden por fecha",
+      "coleccion": "usuarios",
+      "antes": {
+        "plan": "SORT <- COLLSCAN",
+        "nReturned": 49,
+        "totalKeysExamined": 0,
+        "totalDocsExamined": 500,
+        "executionTimeMillis": 0,
+        "tiempo_promedio_cliente_ms": 59.45
+      },
+      "despues": {
+        "plan": "FETCH <- IXSCAN(idx_dispositivo_fecha)",
+        "nReturned": 49,
+        "totalKeysExamined": 49,
+        "totalDocsExamined": 49,
+        "executionTimeMillis": 1,
+        "tiempo_promedio_cliente_ms": 59.01
+      }
+    },
+    {
+      "id": "Q2",
+      "descripcion": "Publicaciones de Tecnología Video/Imagen en Q2 2025",
+      "coleccion": "publicaciones",
+      "antes": {
+        "plan": "SORT <- COLLSCAN",
+        "nReturned": 42,
+        "totalKeysExamined": 0,
+        "totalDocsExamined": 500,
+        "executionTimeMillis": 0,
+        "tiempo_promedio_cliente_ms": 59.63
+      },
+      "despues": {
+        "plan": "FETCH <- SORT_MERGE <- IXSCAN(idx_categoria_tipo_fecha) <- IXSCAN(idx_categoria_tipo_fecha)",
+        "nReturned": 42,
+        "totalKeysExamined": 42,
+        "totalDocsExamined": 42,
+        "executionTimeMillis": 1,
+        "tiempo_promedio_cliente_ms": 59.08
+      }
+    },
+    {
+      "id": "Q3",
+      "descripcion": "Comentarios de una publicación (base del $lookup)",
+      "coleccion": "comentarios",
+      "antes": {
+        "plan": "COLLSCAN",
+        "nReturned": 1,
+        "totalKeysExamined": 0,
+        "totalDocsExamined": 500,
+        "executionTimeMillis": 0,
+        "tiempo_promedio_cliente_ms": 58.24
+      },
+      "despues": {
+        "plan": "FETCH <- IXSCAN(idx_com_publicacion)",
+        "nReturned": 1,
+        "totalKeysExamined": 1,
+        "totalDocsExamined": 1,
+        "executionTimeMillis": 1,
+        "tiempo_promedio_cliente_ms": 59.31
+      }
+    },
+    {
+      "id": "Q4",
+      "descripcion": "Reacciones de un usuario ordenadas por fecha",
+      "coleccion": "reacciones",
+      "antes": {
+        "plan": "SORT <- COLLSCAN",
+        "nReturned": 6,
+        "totalKeysExamined": 0,
+        "totalDocsExamined": 500,
+        "executionTimeMillis": 0,
+        "tiempo_promedio_cliente_ms": 58.64
+      },
+      "despues": {
+        "plan": "FETCH <- IXSCAN(idx_reac_usuario_fecha)",
+        "nReturned": 6,
+        "totalKeysExamined": 6,
+        "totalDocsExamined": 6,
+        "executionTimeMillis": 1,
+        "tiempo_promedio_cliente_ms": 59.22
+      }
+    }
+  ],
+  "agregacion_top_publicaciones_ms": {
+    "antes": 298.68,
+    "despues": 77.54
+  }
+}

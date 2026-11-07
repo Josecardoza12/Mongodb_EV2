@@ -1,0 +1,1176 @@
+{
+  "info": {
+    "name": "ContentFlow API - EP2 BDY0101",
+    "description": "Pruebas de la API REST sobre MongoDB Atlas. Ejecutar en orden con el Collection Runner.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Sistema",
+      "item": [
+        {
+          "name": "Health check (conectividad Atlas)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "pm.test(\"estado ok\", () => pm.expect(pm.response.json().estado).to.eql(\"ok\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. Usuarios",
+      "item": [
+        {
+          "name": "Listar usuarios móviles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios?dispositivo=Móvil&limit=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ],
+              "query": [
+                {
+                  "key": "dispositivo",
+                  "value": "Móvil"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "pm.test(\"máx 5 items\", () => pm.expect(pm.response.json().items.length).to.be.at.most(5));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Camila Rojas\",\n  \"correo\": \"{{correoPrueba}}\",\n  \"pais\": \"Chile\",\n  \"genero\": \"Femenino\",\n  \"dispositivo\": \"Móvil\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"correoPrueba\", `camila.${Date.now()}@contentflow.cl`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "const u = pm.response.json();",
+                  "pm.collectionVariables.set(\"usuarioId\", u._id);",
+                  "pm.test(\"id con formato user_N\", () => pm.expect(u._id).to.match(/^user_\\d+$/));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear usuario con correo duplicado (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Otra Persona\",\n  \"correo\": \"{{correoPrueba}}\",\n  \"pais\": \"Chile\",\n  \"genero\": \"Otro\",\n  \"dispositivo\": \"Tablet\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear usuario inválido (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"X\",\n  \"correo\": \"no-es-correo\",\n  \"pais\": \"Chile\",\n  \"genero\": \"N/A\",\n  \"dispositivo\": \"Smart TV\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "pm.test(\"detalla 4+ campos\", () => pm.expect(pm.response.json().error.detalle.length).to.be.at.least(4));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener usuario creado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar dispositivo del usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dispositivo\": \"Desktop\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "pm.test(\"dispositivo actualizado\", () => pm.expect(pm.response.json().dispositivo).to.eql(\"Desktop\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener usuario inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/user_999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "user_999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Publicaciones",
+      "item": [
+        {
+          "name": "Crear publicación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": \"{{usuarioId}}\",\n  \"contenido\": \"Tutorial: dashboard en Power BI con datos de MongoDB Atlas\",\n  \"categoria\": \"Educación\",\n  \"tipo\": \"Video\",\n  \"hashtags\": [\n    \"#Aprendizaje\",\n    \"#innovacion\",\n    \"#aprendizaje\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "const p = pm.response.json();",
+                  "pm.collectionVariables.set(\"pubId\", p._id);",
+                  "pm.test(\"hashtags normalizados y sin repetir\", () => pm.expect(p.hashtags).to.eql([\"#aprendizaje\", \"#innovacion\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear publicación con autor inexistente (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": \"user_999999\",\n  \"contenido\": \"Hola\",\n  \"categoria\": \"Cultura\",\n  \"tipo\": \"Texto\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Tecnología + #innovacion (Q2 2025)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicaciones?categoria=Tecnología&hashtag=%23innovacion&desde=2025-04-01T00:00:00&hasta=2025-06-30T23:59:59&orden=fecha_asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicaciones"
+              ],
+              "query": [
+                {
+                  "key": "categoria",
+                  "value": "Tecnología"
+                },
+                {
+                  "key": "hashtag",
+                  "value": "%23innovacion"
+                },
+                {
+                  "key": "desde",
+                  "value": "2025-04-01T00:00:00"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2025-06-30T23:59:59"
+                },
+                {
+                  "key": "orden",
+                  "value": "fecha_asc"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rango de fechas inválido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicaciones?desde=2025-06-01T00:00:00&hasta=2025-01-01T00:00:00",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicaciones"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2025-06-01T00:00:00"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2025-01-01T00:00:00"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detalle de publicación con interacciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicaciones/{{pubId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicaciones",
+                "{{pubId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar publicación",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicaciones/{{pubId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicaciones",
+                "{{pubId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contenido\": \"Tutorial actualizado (parte 1)\",\n  \"hashtags\": [\n    \"#aprendizaje\",\n    \"#series\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "pm.test(\"tiene editada_en\", () => pm.expect(pm.response.json()).to.have.property(\"editada_en\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar sin campos (400)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicaciones/{{pubId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicaciones",
+                "{{pubId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Reacciones",
+      "item": [
+        {
+          "name": "Reaccionar a la publicación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reacciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reacciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": \"user_1\",\n  \"publicacion_id\": \"{{pubId}}\",\n  \"tipo_reaccion\": \"Me encanta\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "pm.collectionVariables.set(\"reaccionId\", pm.response.json()._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reacción duplicada (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reacciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reacciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": \"user_1\",\n  \"publicacion_id\": \"{{pubId}}\",\n  \"tipo_reaccion\": \"Me gusta\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reacción con tipo inválido (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reacciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reacciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": \"user_2\",\n  \"publicacion_id\": \"{{pubId}}\",\n  \"tipo_reaccion\": \"Me divierte\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar reacciones de la publicación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reacciones?publicacion_id={{pubId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reacciones"
+              ],
+              "query": [
+                {
+                  "key": "publicacion_id",
+                  "value": "{{pubId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "pm.test(\"total 1\", () => pm.expect(pm.response.json().total).to.eql(1));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Comentarios",
+      "item": [
+        {
+          "name": "Comentar la publicación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comentarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comentarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": \"user_2\",\n  \"publicacion_id\": \"{{pubId}}\",\n  \"comentario\": \"¡Muy claro, gracias!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "pm.collectionVariables.set(\"comentarioId\", pm.response.json()._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sumar 5 likes al comentario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comentarios/{{comentarioId}}/likes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comentarios",
+                "{{comentarioId}}",
+                "likes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incremento\": 5\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));",
+                  "pm.test(\"likes = 5\", () => pm.expect(pm.response.json().likes).to.eql(5));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Comentarios destacados (min 90 likes)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/comentarios?min_likes=90&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comentarios"
+              ],
+              "query": [
+                {
+                  "key": "min_likes",
+                  "value": "90"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Reportes",
+      "item": [
+        {
+          "name": "Top 10 usuarios activos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reportes/usuarios-activos?top=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reportes",
+                "usuarios-activos"
+              ],
+              "query": [
+                {
+                  "key": "top",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Top 10 publicaciones populares",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reportes/publicaciones-populares?top=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reportes",
+                "publicaciones-populares"
+              ],
+              "query": [
+                {
+                  "key": "top",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar campañas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campanas?objetivo=Aumentar engagement&limit=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campanas"
+              ],
+              "query": [
+                {
+                  "key": "objetivo",
+                  "value": "Aumentar engagement"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rendimiento campaña camp_1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campanas/camp_1/rendimiento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campanas",
+                "camp_1",
+                "rendimiento"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Limpieza (DELETE)",
+      "item": [
+        {
+          "name": "Eliminar reacción",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reacciones/{{reaccionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reacciones",
+                "{{reaccionId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar comentario",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/comentarios/{{comentarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comentarios",
+                "{{comentarioId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar publicación",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicaciones/{{pubId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicaciones",
+                "{{pubId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar usuario (cascada)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verificar usuario eliminado (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Tiene X-Request-ID\", () => pm.response.to.have.header(\"X-Request-ID\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    },
+    {
+      "key": "pubId",
+      "value": ""
+    },
+    {
+      "key": "reaccionId",
+      "value": ""
+    },
+    {
+      "key": "comentarioId",
+      "value": ""
+    },
+    {
+      "key": "correoPrueba",
+      "value": ""
+    }
+  ]
+}
